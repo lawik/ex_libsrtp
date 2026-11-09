@@ -8,6 +8,27 @@ defmodule ExLibSRTP.NativeTest do
     assert is_reference(native)
   end
 
+  test "releases sessions that are no longer referenced" do
+    # The state destructor runs only when the reference is garbage collected,
+    # so create sessions in a throwaway process and collect it
+    task =
+      Task.async(fn ->
+        for _i <- 1..1_000 do
+          native = Native.create()
+          assert is_reference(native)
+        end
+
+        :erlang.garbage_collect()
+        :ok
+      end)
+
+    assert :ok = Task.await(task)
+
+    # Give the destructors a chance to run and make sure the VM survived them
+    Process.sleep(100)
+    assert is_reference(Native.create())
+  end
+
   test "adds and removes stream successfully" do
     ssrc = 123_456_789
 

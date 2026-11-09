@@ -29,12 +29,12 @@ void on_unload(UnifexEnv *env, void *priv_data) {
 }
 
 void handle_destroy_state(UnifexEnv *env, UnifexState *state) {
+  UNIFEX_UNUSED(env);
+
   if (state->session) {
     srtp_dealloc(state->session);
     state->session = NULL;
   }
-
-  unifex_release_state(env, state);
 }
 
 static void free_master_keys_array(srtp_policy_t *policy) {
@@ -127,7 +127,11 @@ UNIFEX_TERM create(UnifexEnv *env) {
     return unifex_raise(env, srtp_util_strerror(err));
   }
 
-  return create_result(env, state);
+  // The term returned to Elixir holds its own reference to the state; drop
+  // ours so that the state is destroyed once that term is garbage collected.
+  UNIFEX_TERM res = create_result(env, state);
+  unifex_release_state(env, state);
+  return res;
 }
 
 bool create_policy(UnifexEnv *env, srtp_policy_t *policy, int ssrc_type,
@@ -263,8 +267,10 @@ UNIFEX_TERM protect(UnifexEnv *env, UnifexState *state, char *what,
   int err;
   srtp_err_status_t serr;
 
+  // srtp_protect_rtcp() may write SRTP_MAX_TRAILER_LEN + 4 bytes (the SRTCP
+  // index) after the packet, srtp_protect() SRTP_MAX_TRAILER_LEN
   UnifexPayload *protected = unifex_payload_clone_ex(
-      env, payload, payload->type, payload->size + SRTP_MAX_TRAILER_LEN);
+      env, payload, payload->type, payload->size + SRTP_MAX_TRAILER_LEN + 4);
   int len = (int)payload->size;
 
   serr = !strcmp(what, "rtp")

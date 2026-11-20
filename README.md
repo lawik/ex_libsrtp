@@ -16,27 +16,7 @@ def deps do
 end
 ```
 
-This package is based on [libsrtp](https://github.com/cisco/libsrtp). The precompiled builds will be pulled and linked automatically. However, should there be any problems, consider installing it manually.
-
-### Manual instalation of dependencies
-
-#### macOS
-
-```shell
-brew install srtp
-```
-
-#### Ubuntu
-
-```shell
-apt install libsrtp2-dev
-```
-
-#### Arch/Manjaro
-
-```shell
-pacman -S libsrtp
-```
+This package is based on [libsrtp](https://github.com/cisco/libsrtp). This fork vendors libsrtp 2.7.0 in `c_src/libsrtp` and compiles it into the NIF, using OpenSSL's libcrypto as the crypto backend (so the AEAD AES-GCM profiles are available). No libsrtp needs to be installed, but libcrypto must be findable with `pkg-config` (`libcrypto.pc`), e.g. Homebrew's `openssl@3` on macOS, `libssl-dev` on Ubuntu, or the sysroot of a Nerves system.
 
 ## Usage
 

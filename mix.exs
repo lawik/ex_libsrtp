@@ -42,7 +42,6 @@ defmodule ExLibSRTP.Mixfile do
       {:bunch, "~> 1.6"},
       {:unifex, "~> 1.1"},
       {:bundlex, "~> 1.3"},
-      {:membrane_precompiled_dependency_provider, "~> 0.2.1"},
       {:ex_doc, ">= 0.40.0", only: :dev, runtime: false},
       {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: :dev, runtime: false}
